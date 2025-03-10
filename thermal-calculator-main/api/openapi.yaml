@@ -1,0 +1,461 @@
+openapi: 3.0.3
+info:
+  title: Data Center Cooling Calculator API
+  description: API for calculating cooling solutions for data centers, specifically designed for ColdLogik rear door heat exchangers.
+  version: 0.1.0
+  contact:
+    name: Your Organization
+    email: cooling-calculator@example.com
+    url: https://github.com/your-organization/data-center-cooling-calculator
+servers:
+  - url: http://localhost:5000
+    description: Local development server
+  - url: https://api.cooling-calculator.example.com
+    description: Production server
+paths:
+  /api/calculate:
+    post:
+      summary: Perform Cooling Calculation
+      description: Calculates cooling performance based on input parameters
+      operationId: calculate
+      tags:
+        - Calculations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculationRequest'
+      responses:
+        '200':
+          description: Successful calculation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculationResult'
+        '400':
+          description: Invalid input parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              
+  /api/recommend:
+    post:
+      summary: Recommend Products
+      description: Recommends suitable products based on cooling requirements
+      operationId: recommendProducts
+      tags:
+        - Products
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecommendationRequest'
+      responses:
+        '200':
+          description: Successful recommendations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recommendations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+        '400':
+          description: Invalid input parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /api/products:
+    get:
+      summary: Get All Products
+      description: Returns all available cooling products
+      operationId: getProducts
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                      
+  /api/products/{productId}:
+    get:
+      summary: Get Product Details
+      description: Returns details for a specific product
+      operationId: getProduct
+      tags:
+        - Products
+      parameters:
+        - name: productId
+          in: path
+          description: Product ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /api/validate:
+    post:
+      summary: Validate Input Parameters
+      description: Validates input parameters without performing calculations
+      operationId: validateInputs
+      tags:
+        - Validation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculationRequest'
+      responses:
+        '200':
+          description: Validation successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    example: true
+        '400':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+components:
+  schemas:
+    CalculationRequest:
+      type: object
+      required:
+        - cooling_kw
+        - room_temp
+        - desired_temp
+        - water_temp
+      properties:
+        cooling_kw:
+          type: number
+          format: float
+          description: Required cooling capacity in kW
+          example: 50
+          minimum: 0
+        room_temp:
+          type: number
+          format: float
+          description: Room temperature in °C
+          example: 24
+        desired_temp:
+          type: number
+          format: float
+          description: Desired room temperature in °C
+          example: 22
+        water_temp:
+          type: number
+          format: float
+          description: Water supply temperature in °C
+          example: 15
+        rack_type:
+          type: string
+          description: Specific rack type
+          example: 48U800
+        fluid_type:
+          type: string
+          description: Cooling fluid type
+          default: water
+          example: water
+          enum:
+            - water
+            - propylene_glycol
+            - ethylene_glycol
+        glycol_percentage:
+          type: integer
+          description: Percentage of glycol in mixture
+          default: 0
+          minimum: 0
+          maximum: 100
+          example: 30
+        units:
+          type: string
+          description: Units system (metric or imperial)
+          default: metric
+          enum:
+            - metric
+            - imperial
+          example: metric
+        include_commercial:
+          type: boolean
+          description: Include commercial calculations
+          default: false
+          example: true
+          
+    RecommendationRequest:
+      type: object
+      required:
+        - cooling_kw
+      properties:
+        cooling_kw:
+          type: number
+          format: float
+          description: Required cooling capacity in kW
+          example: 50
+          minimum: 0
+        rack_type:
+          type: string
+          description: Specific rack type
+          example: 48U800
+        passive_preferred:
+          type: boolean
+          description: Whether passive cooling is preferred
+          default: false
+          example: false
+          
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the product
+          example: CL20-60
+        name:
+          type: string
+          description: Product display name
+          example: ColdLogik CL20-60
+        series:
+          type: string
+          description: Product series
+          example: CL20
+          enum:
+            - CL20
+            - CL21
+            - CL23
+        description:
+          type: string
+          description: Product description
+          example: Standard rear door heat exchanger
+        max_cooling_capacity:
+          type: number
+          format: float
+          description: Maximum cooling capacity in kW
+          example: 60
+        nominal_flow_rate:
+          type: number
+          format: float
+          description: Nominal water flow rate in m³/h
+          example: 3.0
+        max_air_flow:
+          type: number
+          format: float
+          description: Maximum air flow rate in m³/h
+          example: 5000
+        nominal_fan_power:
+          type: number
+          format: float
+          description: Nominal fan power consumption in kW
+          example: 0.22
+        base_pressure_drop:
+          type: number
+          format: float
+          description: Base pressure drop in kPa at nominal flow
+          example: 30
+        compatible_racks:
+          type: object
+          description: Map of compatible rack types
+          additionalProperties:
+            type: boolean
+          example:
+            42U600: true
+            42U800: true
+            48U600: true
+            48U800: true
+            
+    CalculationResult:
+      type: object
+      properties:
+        product:
+          $ref: '#/components/schemas/Product'
+        input_parameters:
+          type: object
+          properties:
+            cooling_kw:
+              type: number
+              example: 50
+            room_temp:
+              type: number
+              example: 24
+            desired_temp:
+              type: number
+              example: 22
+            water_temp:
+              type: number
+              example: 15
+            fluid_type:
+              type: string
+              example: water
+            glycol_percentage:
+              type: integer
+              example: 0
+        water_side:
+          type: object
+          properties:
+            flow_rate:
+              type: number
+              description: Water flow rate in m³/h
+              example: 2.5
+            pressure_drop:
+              type: number
+              description: Pressure drop in kPa
+              example: 35
+            pump_power:
+              type: number
+              description: Pump power in kW
+              example: 0.12
+        air_side:
+          type: object
+          properties:
+            air_flow_rate:
+              type: number
+              description: Air flow rate in m³/h
+              example: 4500
+            fan_speed_percentage:
+              type: number
+              description: Fan speed as percentage of maximum
+              example: 85
+            fan_power:
+              type: number
+              description: Fan power in kW
+              example: 0.18
+        efficiency:
+          type: object
+          properties:
+            cop:
+              type: number
+              description: Coefficient of Performance
+              example: 16.7
+            eer:
+              type: number
+              description: Energy Efficiency Ratio
+              example: 57
+            total_power:
+              type: number
+              description: Total power consumption in kW
+              example: 0.3
+        commercial:
+          type: object
+          properties:
+            capital_costs:
+              type: object
+              properties:
+                product:
+                  type: number
+                  example: 18000
+                installation:
+                  type: number
+                  example: 3600
+                total:
+                  type: number
+                  example: 21600
+            operational_costs:
+              type: object
+              properties:
+                annual_electricity:
+                  type: number
+                  example: 394.2
+                annual_maintenance:
+                  type: number
+                  example: 900
+                annual_total:
+                  type: number
+                  example: 1294.2
+                annual_savings:
+                  type: number
+                  example: 1315.8
+            roi:
+              type: object
+              properties:
+                simple_payback_years:
+                  type: number
+                  example: 16.4
+                annual_roi_percentage:
+                  type: number
+                  example: 6.1
+            tco:
+              type: object
+              properties:
+                capex:
+                  type: number
+                  example: 21600
+                opex:
+                  type: number
+                  example: 12942
+                total:
+                  type: number
+                  example: 34542
+                traditional_total:
+                  type: number
+                  example: 41958
+                savings:
+                  type: number
+                  example: 7416
+            environmental:
+              type: object
+              properties:
+                annual_energy_savings_kwh:
+                  type: number
+                  example: 8772
+                annual_carbon_reduction_kg:
+                  type: number
+                  example: 4386
+                lifetime_carbon_reduction_kg:
+                  type: number
+                  example: 43860
+        warnings:
+          type: array
+          items:
+            type: string
+          example: []
+          
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Error message
+          example: Invalid input parameters
+      required:
+        - detail
+        
+tags:
+  - name: Calculations
+    description: Endpoints for performing calculations
+  - name: Products
+    description: Endpoints for product information
+  - name: Validation
+    description: Endpoints for validation 

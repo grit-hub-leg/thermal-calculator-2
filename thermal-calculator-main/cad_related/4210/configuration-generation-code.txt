@@ -1,0 +1,178 @@
+Sub GenerateUSpaceConfigurations()
+    ' Clear existing data
+    Range("A2:Z1000").ClearContents
+    
+    ' Define arrays for configuration options
+    Dim heights As Variant
+    heights = Array(24, 30, 36, 42, 48)
+    
+    Dim widths As Variant
+    widths = Array(600, 800)
+    
+    Dim depths As Variant
+    depths = Array(600, 800, 1000, 1200, 1400)
+    
+    Dim loadRatings As Variant
+    loadRatings = Array("Standard", "HeavyDuty")
+    
+    Dim doorTypes As Variant
+    doorTypes = Array("AirTech", "Glass", "Solid")
+    
+    Dim topPanelTypes As Variant
+    topPanelTypes = Array("Standard", "WithFanTray")
+    
+    Dim bottomPanelTypes As Variant
+    bottomPanelTypes = Array("Solid", "Vented")
+    
+    ' Initialize row counter
+    Dim row As Integer
+    row = 2
+    
+    ' Config ID counter
+    Dim configID As Integer
+    configID = 1
+    
+    ' Generate base configurations
+    For Each height In heights
+        For Each width In widths
+            For Each depth In depths
+                ' Add standard load rating configuration
+                Range("A" & row).Value = "CFG" & Format(configID, "000")
+                Range("B" & row).Value = height
+                Range("C" & row).Formula = "=B" & row & "*44.45+13.1"
+                Range("D" & row).Value = width
+                Range("E" & row).Value = depth
+                Range("F" & row).Value = "Standard"
+                Range("G" & row).Value = "AirTech"  ' Default front door
+                Range("H" & row).Value = "AirTech"  ' Default rear door
+                Range("I" & row).Value = "Standard" ' Default top panel
+                Range("J" & row).Value = "Solid"    ' Default bottom panel
+                Range("K" & row).Value = False      ' Default no cooling system
+                
+                ' Derived material values
+                Range("L" & row).Formula = "=IF(F" & row & "=""HeavyDuty"",2.0,1.5)"  ' Corner post thickness
+                Range("M" & row).Formula = "=IF(OR(F" & row & "=""HeavyDuty"",AND(B" & row & ">=42,E" & row & ">=1000)),1.2,1.0)"  ' Side panel thickness
+                Range("N" & row).Formula = "=IF(F" & row & "=""HeavyDuty"",1.2,1.0)"  ' Door thickness
+                Range("O" & row).Value = 1.2  ' Top panel thickness
+                Range("P" & row).Value = 1.2  ' Bottom panel thickness
+                
+                ' Component part numbers
+                Range("Q" & row).Formula = "=""USpace4210-CornerPost-""&B" & row & "&""U-""&L" & row & "&""mm"""
+                Range("R" & row).Formula = "=""USpace4210-SidePanel-""&B" & row & "&""U-""&E" & row & "&""D-""&M" & row & "&""mm-Left"""
+                Range("S" & row).Formula = "=""USpace4210-SidePanel-""&B" & row & "&""U-""&E" & row & "&""D-""&M" & row & "&""mm-Right"""
+                Range("T" & row).Formula = "=""USpace4210-TopPanel-""&D" & row & "&""W-""&E" & row & "&""D-""&O" & row & "&""mm"""
+                Range("U" & row).Formula = "=""USpace4210-BottomPanel-""&D" & row & "&""W-""&E" & row & "&""D-""&P" & row & "&""mm"""
+                Range("V" & row).Formula = "=""USpace4210-Door""&G" & row & "&""-""&B" & row & "&""U-""&D" & row & "&""W-""&N" & row & "&""mm"""
+                Range("W" & row).Formula = "=""USpace4210-Door""&H" & row & "&""-""&B" & row & "&""U-""&D" & row & "&""W-""&N" & row & "&""mm"""
+                Range("X" & row).Formula = "=IF(D" & row & "=800,TRUE,FALSE)"
+                
+                row = row + 1
+                configID = configID + 1
+                
+                ' Add heavy duty load rating configuration for taller units and deeper units
+                If height >= 36 Or depth >= 1000 Then
+                    Range("A" & row).Value = "CFG" & Format(configID, "000")
+                    Range("B" & row).Value = height
+                    Range("C" & row).Formula = "=B" & row & "*44.45+13.1"
+                    Range("D" & row).Value = width
+                    Range("E" & row).Value = depth
+                    Range("F" & row).Value = "HeavyDuty"
+                    Range("G" & row).Value = "AirTech"  ' Default front door
+                    Range("H" & row).Value = "AirTech"  ' Default rear door
+                    Range("I" & row).Value = "Standard" ' Default top panel
+                    Range("J" & row).Value = "Solid"    ' Default bottom panel
+                    Range("K" & row).Value = False      ' Default no cooling system
+                    
+                    ' Derived material values (will be calculated by formulas)
+                    Range("L" & row).Formula = "=IF(F" & row & "=""HeavyDuty"",2.0,1.5)"  ' Corner post thickness
+                    Range("M" & row).Formula = "=IF(OR(F" & row & "=""HeavyDuty"",AND(B" & row & ">=42,E" & row & ">=1000)),1.2,1.0)"  ' Side panel thickness
+                    Range("N" & row).Formula = "=IF(F" & row & "=""HeavyDuty"",1.2,1.0)"  ' Door thickness
+                    Range("O" & row).Value = 1.2  ' Top panel thickness
+                    Range("P" & row).Value = 1.2  ' Bottom panel thickness
+                    
+                    ' Component part numbers (will be calculated by formulas)
+                    Range("Q" & row).Formula = "=""USpace4210-CornerPost-""&B" & row & "&""U-""&L" & row & "&""mm"""
+                    Range("R" & row).Formula = "=""USpace4210-SidePanel-""&B" & row & "&""U-""&E" & row & "&""D-""&M" & row & "&""mm-Left"""
+                    Range("S" & row).Formula = "=""USpace4210-SidePanel-""&B" & row & "&""U-""&E" & row & "&""D-""&M" & row & "&""mm-Right"""
+                    Range("T" & row).Formula = "=""USpace4210-TopPanel-""&D" & row & "&""W-""&E" & row & "&""D-""&O" & row & "&""mm"""
+                    Range("U" & row).Formula = "=""USpace4210-BottomPanel-""&D" & row & "&""W-""&E" & row & "&""D-""&P" & row & "&""mm"""
+                    Range("V" & row).Formula = "=""USpace4210-Door""&G" & row & "&""-""&B" & row & "&""U-""&D" & row & "&""W-""&N" & row & "&""mm"""
+                    Range("W" & row).Formula = "=""USpace4210-Door""&H" & row & "&""-""&B" & row & "&""U-""&D" & row & "&""W-""&N" & row & "&""mm"""
+                    Range("X" & row).Formula = "=IF(D" & row & "=800,TRUE,FALSE)"
+                    
+                    row = row + 1
+                    configID = configID + 1
+                End If
+            Next depth
+        Next width
+    Next height
+    
+    ' Add a few variant configurations with different door types
+    ' Glass Front Door variant for 42U 800W 1000D
+    Range("A" & row).Value = "CFG" & Format(configID, "000")
+    Range("B" & row).Value = 42
+    Range("C" & row).Formula = "=B" & row & "*44.45+13.1"
+    Range("D" & row).Value = 800
+    Range("E" & row).Value = 1000
+    Range("F" & row).Value = "Standard"
+    Range("G" & row).Value = "Glass"     ' Glass front door
+    Range("H" & row).Value = "AirTech"   ' Default rear door
+    Range("I" & row).Value = "Standard"  ' Default top panel
+    Range("J" & row).Value = "Solid"     ' Default bottom panel
+    Range("K" & row).Value = False       ' Default no cooling system
+    ' Add formulas for derived values and part numbers
+    row = row + 1
+    configID = configID + 1
+    
+    ' Solid Rear Door variant for 42U 800W 1000D
+    Range("A" & row).Value = "CFG" & Format(configID, "000")
+    Range("B" & row).Value = 42
+    Range("C" & row).Formula = "=B" & row & "*44.45+13.1"
+    Range("D" & row).Value = 800
+    Range("E" & row).Value = 1000
+    Range("F" & row).Value = "Standard"
+    Range("G" & row).Value = "AirTech"   ' Default front door
+    Range("H" & row).Value = "Solid"     ' Solid rear door
+    Range("I" & row).Value = "Standard"  ' Default top panel
+    Range("J" & row).Value = "Solid"     ' Default bottom panel
+    Range("K" & row).Value = False       ' Default no cooling system
+    ' Add formulas for derived values and part numbers
+    row = row + 1
+    configID = configID + 1
+    
+    ' Cooling system variant for 42U 800W 1000D
+    Range("A" & row).Value = "CFG" & Format(configID, "000")
+    Range("B" & row).Value = 42
+    Range("C" & row).Formula = "=B" & row & "*44.45+13.1"
+    Range("D" & row).Value = 800
+    Range("E" & row).Value = 1000
+    Range("F" & row).Value = "Standard"
+    Range("G" & row).Value = "AirTech"      ' Default front door
+    Range("H" & row).Value = "AirTech"      ' Default rear door
+    Range("I" & row).Value = "WithFanTray"  ' Fan tray top panel
+    Range("J" & row).Value = "Vented"       ' Vented bottom panel
+    Range("K" & row).Value = True           ' Include cooling system
+    ' Add formulas for derived values and part numbers
+    
+    ' Format the table
+    Range("A1:X" & row - 1).Select
+    With Selection
+        .Borders.LineStyle = xlContinuous
+        .Font.Name = "Calibri"
+        .Font.Size = 10
+        .HorizontalAlignment = xlCenter
+        .VerticalAlignment = xlCenter
+        .WrapText = False
+    End With
+    
+    Range("A1:X1").Select
+    With Selection
+        .Font.Bold = True
+        .Interior.ColorIndex = 15
+    End With
+    
+    ' AutoFit columns
+    Columns("A:X").AutoFit
+    
+    MsgBox "Generated " & row - 2 & " configurations", vbInformation
+End Sub

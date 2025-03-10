@@ -1,0 +1,61 @@
+# Configuration Table for USpace4210
+
+# Main Configuration Parameters
+A1: ConfigID
+B1: Height_U
+C1: Height_mm
+D1: Width_mm
+E1: Depth_mm
+F1: LoadRating
+G1: DoorType_Front
+H1: DoorType_Rear
+I1: TopPanelType
+J1: BottomPanelType
+K1: Include_CoolingSystem
+
+# Derived Material Parameters
+L1: CornerPost_Thickness
+M1: SidePanel_Thickness
+N1: Door_Thickness
+O1: TopPanel_Thickness
+P1: BottomPanel_Thickness
+
+# Component Selection Parameters
+Q1: CornerPost_PartNumber
+R1: SidePanel_Left_PartNumber
+S1: SidePanel_Right_PartNumber
+T1: TopPanel_PartNumber
+U1: BottomPanel_PartNumber
+V1: FrontDoor_PartNumber
+W1: RearDoor_PartNumber
+X1: Include_InfillPanels
+
+# Example data row (for first configuration)
+A2: CFG001
+B2: 24
+C2: =B2*44.45+13.1
+D2: 600
+E2: 600
+F2: Standard
+G2: AirTech
+H2: AirTech
+I2: Standard
+J2: Solid
+K2: FALSE
+
+# Derived material values using Excel formulas
+L2: =IF(F2="HeavyDuty",2.0,1.5)
+M2: =IF(OR(F2="HeavyDuty",AND(B2>=42,E2>=1000)),1.2,1.0)
+N2: =IF(F2="HeavyDuty",1.2,1.0)
+O2: 1.2
+P2: 1.2
+
+# Component part numbers using Excel formulas (concatenation)
+Q2: =CONCATENATE("USpace4210-CornerPost-",B2,"U-",L2,"mm")
+R2: =CONCATENATE("USpace4210-SidePanel-",B2,"U-",E2,"D-",M2,"mm-Left")
+S2: =CONCATENATE("USpace4210-SidePanel-",B2,"U-",E2,"D-",M2,"mm-Right")
+T2: =CONCATENATE("USpace4210-TopPanel-",D2,"W-",E2,"D-",O2,"mm")
+U2: =CONCATENATE("USpace4210-BottomPanel-",D2,"W-",E2,"D-",P2,"mm")
+V2: =CONCATENATE("USpace4210-Door",G2,"-",B2,"U-",D2,"W-",N2,"mm")
+W2: =CONCATENATE("USpace4210-Door",H2,"-",B2,"U-",D2,"W-",N2,"mm")
+X2: =IF(D2=800,TRUE,FALSE)

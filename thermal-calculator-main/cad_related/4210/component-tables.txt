@@ -1,0 +1,135 @@
+# Sheet: CornerPosts
+
+A1: PartNumber
+B1: Height_U
+C1: Height_mm
+D1: MaterialThickness
+E1: HolePitch
+F1: LoadRating
+
+# Example data for first few corner posts
+A2: USpace4210-CornerPost-24U-1.5mm
+B2: 24
+C2: =B2*44.45+13.1
+D2: 1.5
+E2: 44.45
+F2: Standard
+
+A3: USpace4210-CornerPost-24U-2.0mm
+B3: 24
+C3: =B3*44.45+13.1
+D3: 2.0
+E3: 44.45
+F3: HeavyDuty
+
+A4: USpace4210-CornerPost-30U-1.5mm
+B4: 30
+C4: =B4*44.45+13.1
+D4: 1.5
+E4: 44.45
+F4: Standard
+
+# Sheet: SidePanels
+
+A1: PartNumber
+B1: Height_U
+C1: Height_mm
+D1: Depth_mm
+E1: MaterialThickness
+F1: Side
+G1: LockType
+
+# Example data for first few side panels
+A2: USpace4210-SidePanel-24U-600D-1.0mm-Left
+B2: 24
+C2: =B2*44.45+13.1
+D2: 600
+E2: 1.0
+F2: Left
+G2: Cam
+
+A3: USpace4210-SidePanel-24U-600D-1.0mm-Right
+B3: 24
+C3: =B3*44.45+13.1
+D3: 600
+E3: 1.0
+F3: Right
+G3: Cam
+
+A4: USpace4210-SidePanel-24U-600D-1.2mm-Left
+B4: 24
+C4: =B4*44.45+13.1
+D4: 600
+E4: 1.2
+F4: Left
+G4: Cam
+
+# Sheet: TopPanels
+
+A1: PartNumber
+B1: Width_mm
+C1: Depth_mm
+D1: MaterialThickness
+E1: PanelType
+F1: FanCutouts
+
+# Example data for top panels
+A2: USpace4210-TopPanel-600W-600D-1.2mm
+B2: 600
+C2: 600
+D2: 1.2
+E2: Standard
+F2: FALSE
+
+A3: USpace4210-TopPanel-600W-600D-FanTray-1.2mm
+B3: 600
+C3: 600
+D3: 1.2
+E3: WithFanTray
+F3: TRUE
+
+A4: USpace4210-TopPanel-600W-800D-1.2mm
+B4: 600
+C4: 800
+D4: 1.2
+E4: Standard
+F4: FALSE
+
+# Sheet: Doors
+
+A1: PartNumber
+B1: Height_U
+C1: Height_mm
+D1: Width_mm
+E1: MaterialThickness
+F1: DoorType
+G1: LockType
+H1: Position
+
+# Example data for doors
+A2: USpace4210-DoorAirTech-24U-600W-1.0mm
+B2: 24
+C2: =B2*44.45+13.1
+D2: 600
+E2: 1.0
+F2: AirTech
+G2: Single
+H2: Front
+
+A3: USpace4210-DoorAirTech-24U-600W-1.2mm
+B3: 24
+C3: =B3*44.45+13.1
+D3: 600
+E3: 1.2
+F3: AirTech
+G3: Single
+H3: Front
+
+A4: USpace4210-DoorGlass-24U-600W-1.0mm
+B4: 24
+C4: =B4*44.45+13.1
+D4: 600
+E4: 1.0
+F4: Glass
+G4: Single
+H4: Front

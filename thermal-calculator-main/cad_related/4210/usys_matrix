@@ -1,0 +1,146 @@
+# USpace 4210 Component Matrix
+
+## Base Configuration Matrix
+| Height | Width | Depth | Model Code |
+|--------|-------|-------|------------|
+| 24U (1200mm) | 600mm | 600mm | USpace4210-24U-600W-600D |
+| 24U (1200mm) | 600mm | 800mm | USpace4210-24U-600W-800D |
+| 24U (1200mm) | 600mm | 1000mm | USpace4210-24U-600W-1000D |
+| 24U (1200mm) | 600mm | 1200mm | USpace4210-24U-600W-1200D |
+| 24U (1200mm) | 600mm | 1400mm | USpace4210-24U-600W-1400D |
+| 24U (1200mm) | 800mm | 600mm | USpace4210-24U-800W-600D |
+| 24U (1200mm) | 800mm | 800mm | USpace4210-24U-800W-800D |
+| 24U (1200mm) | 800mm | 1000mm | USpace4210-24U-800W-1000D |
+| 24U (1200mm) | 800mm | 1200mm | USpace4210-24U-800W-1200D |
+| 24U (1200mm) | 800mm | 1400mm | USpace4210-24U-800W-1400D |
+| 30U (1466mm) | 600mm | 600mm | USpace4210-30U-600W-600D |
+| 30U (1466mm) | 600mm | 800mm | USpace4210-30U-600W-800D |
+| 30U (1466mm) | 600mm | 1000mm | USpace4210-30U-600W-1000D |
+| 30U (1466mm) | 600mm | 1200mm | USpace4210-30U-600W-1200D |
+| 30U (1466mm) | 600mm | 1400mm | USpace4210-30U-600W-1400D |
+| 30U (1466mm) | 800mm | 600mm | USpace4210-30U-800W-600D |
+| 30U (1466mm) | 800mm | 800mm | USpace4210-30U-800W-800D |
+| 30U (1466mm) | 800mm | 1000mm | USpace4210-30U-800W-1000D |
+| 30U (1466mm) | 800mm | 1200mm | USpace4210-30U-800W-1200D |
+| 30U (1466mm) | 800mm | 1400mm | USpace4210-30U-800W-1400D |
+| 36U (1867mm) | 600mm | 600mm | USpace4210-36U-600W-600D |
+| 36U (1867mm) | 600mm | 800mm | USpace4210-36U-600W-800D |
+| 36U (1867mm) | 600mm | 1000mm | USpace4210-36U-600W-1000D |
+| 36U (1867mm) | 600mm | 1200mm | USpace4210-36U-600W-1200D |
+| 36U (1867mm) | 600mm | 1400mm | USpace4210-36U-600W-1400D |
+| 36U (1867mm) | 800mm | 600mm | USpace4210-36U-800W-600D |
+| 36U (1867mm) | 800mm | 800mm | USpace4210-36U-800W-800D |
+| 36U (1867mm) | 800mm | 1000mm | USpace4210-36U-800W-1000D |
+| 36U (1867mm) | 800mm | 1200mm | USpace4210-36U-800W-1200D |
+| 36U (1867mm) | 800mm | 1400mm | USpace4210-36U-800W-1400D |
+| 42U (1999mm) | 600mm | 600mm | USpace4210-42U-600W-600D |
+| 42U (1999mm) | 600mm | 800mm | USpace4210-42U-600W-800D |
+| 42U (1999mm) | 600mm | 1000mm | USpace4210-42U-600W-1000D |
+| 42U (1999mm) | 600mm | 1200mm | USpace4210-42U-600W-1200D |
+| 42U (1999mm) | 600mm | 1400mm | USpace4210-42U-600W-1400D |
+| 42U (1999mm) | 800mm | 600mm | USpace4210-42U-800W-600D |
+| 42U (1999mm) | 800mm | 800mm | USpace4210-42U-800W-800D |
+| 42U (1999mm) | 800mm | 1000mm | USpace4210-42U-800W-1000D |
+| 42U (1999mm) | 800mm | 1200mm | USpace4210-42U-800W-1200D |
+| 42U (1999mm) | 800mm | 1400mm | USpace4210-42U-800W-1400D |
+| 48U (2266mm) | 600mm | 600mm | USpace4210-48U-600W-600D |
+| 48U (2266mm) | 600mm | 800mm | USpace4210-48U-600W-800D |
+| 48U (2266mm) | 600mm | 1000mm | USpace4210-48U-600W-1000D |
+| 48U (2266mm) | 600mm | 1200mm | USpace4210-48U-600W-1200D |
+| 48U (2266mm) | 600mm | 1400mm | USpace4210-48U-600W-1400D |
+| 48U (2266mm) | 800mm | 600mm | USpace4210-48U-800W-600D |
+| 48U (2266mm) | 800mm | 800mm | USpace4210-48U-800W-800D |
+| 48U (2266mm) | 800mm | 1000mm | USpace4210-48U-800W-1000D |
+| 48U (2266mm) | 800mm | 1200mm | USpace4210-48U-800W-1200D |
+| 48U (2266mm) | 800mm | 1400mm | USpace4210-48U-800W-1400D |
+
+## Component Matrix by Thickness
+
+### Frame Components (Corner Posts)
+| Height | Thickness | Part Number |
+|--------|-----------|-------------|
+| 24U (1200mm) | 1.5mm | USpace4210-CornerPost-24U-1.5mm |
+| 24U (1200mm) | 2.0mm | USpace4210-CornerPost-24U-2.0mm |
+| 30U (1466mm) | 1.5mm | USpace4210-CornerPost-30U-1.5mm |
+| 30U (1466mm) | 2.0mm | USpace4210-CornerPost-30U-2.0mm |
+| 36U (1867mm) | 1.5mm | USpace4210-CornerPost-36U-1.5mm |
+| 36U (1867mm) | 2.0mm | USpace4210-CornerPost-36U-2.0mm |
+| 42U (1999mm) | 1.5mm | USpace4210-CornerPost-42U-1.5mm |
+| 42U (1999mm) | 2.0mm | USpace4210-CornerPost-42U-2.0mm |
+| 48U (2266mm) | 1.5mm | USpace4210-CornerPost-48U-1.5mm |
+| 48U (2266mm) | 2.0mm | USpace4210-CornerPost-48U-2.0mm |
+
+### Side Panels
+| Height | Depth | Thickness | Part Number |
+|--------|-------|-----------|-------------|
+| 24U (1200mm) | 600mm | 1.0mm | USpace4210-SidePanel-24U-600D-1.0mm |
+| 24U (1200mm) | 600mm | 1.2mm | USpace4210-SidePanel-24U-600D-1.2mm |
+| 24U (1200mm) | 800mm | 1.0mm | USpace4210-SidePanel-24U-800D-1.0mm |
+| 24U (1200mm) | 800mm | 1.2mm | USpace4210-SidePanel-24U-800D-1.2mm |
+| 24U (1200mm) | 1000mm | 1.0mm | USpace4210-SidePanel-24U-1000D-1.0mm |
+| 24U (1200mm) | 1000mm | 1.2mm | USpace4210-SidePanel-24U-1000D-1.2mm |
+| 24U (1200mm) | 1200mm | 1.0mm | USpace4210-SidePanel-24U-1200D-1.0mm |
+| 24U (1200mm) | 1200mm | 1.2mm | USpace4210-SidePanel-24U-1200D-1.2mm |
+| 24U (1200mm) | 1400mm | 1.0mm | USpace4210-SidePanel-24U-1400D-1.0mm |
+| 24U (1200mm) | 1400mm | 1.2mm | USpace4210-SidePanel-24U-1400D-1.2mm |
+| 30U (1466mm) | 600mm | 1.0mm | USpace4210-SidePanel-30U-600D-1.0mm |
+| 30U (1466mm) | 600mm | 1.2mm | USpace4210-SidePanel-30U-600D-1.2mm |
+| 30U (1466mm) | 800mm | 1.0mm | USpace4210-SidePanel-30U-800D-1.0mm |
+| 30U (1466mm) | 800mm | 1.2mm | USpace4210-SidePanel-30U-800D-1.2mm |
+| 30U (1466mm) | 1000mm | 1.0mm | USpace4210-SidePanel-30U-1000D-1.0mm |
+| 30U (1466mm) | 1000mm | 1.2mm | USpace4210-SidePanel-30U-1000D-1.2mm |
+| 30U (1466mm) | 1200mm | 1.0mm | USpace4210-SidePanel-30U-1200D-1.0mm |
+| 30U (1466mm) | 1200mm | 1.2mm | USpace4210-SidePanel-30U-1200D-1.2mm |
+| 30U (1466mm) | 1400mm | 1.0mm | USpace4210-SidePanel-30U-1400D-1.0mm |
+| 30U (1466mm) | 1400mm | 1.2mm | USpace4210-SidePanel-30U-1400D-1.2mm |
+
+*Note: Table continues with similar patterns for 36U, 42U, and 48U side panels*
+
+### Top Cover Panels
+| Width | Depth | Thickness | Part Number |
+|-------|-------|-----------|-------------|
+| 600mm | 600mm | 1.2mm | USpace4210-TopPanel-600W-600D-1.2mm |
+| 600mm | 800mm | 1.2mm | USpace4210-TopPanel-600W-800D-1.2mm |
+| 600mm | 1000mm | 1.2mm | USpace4210-TopPanel-600W-1000D-1.2mm |
+| 600mm | 1200mm | 1.2mm | USpace4210-TopPanel-600W-1200D-1.2mm |
+| 600mm | 1400mm | 1.2mm | USpace4210-TopPanel-600W-1400D-1.2mm |
+| 800mm | 600mm | 1.2mm | USpace4210-TopPanel-800W-600D-1.2mm |
+| 800mm | 800mm | 1.2mm | USpace4210-TopPanel-800W-800D-1.2mm |
+| 800mm | 1000mm | 1.2mm | USpace4210-TopPanel-800W-1000D-1.2mm |
+| 800mm | 1200mm | 1.2mm | USpace4210-TopPanel-800W-1200D-1.2mm |
+| 800mm | 1400mm | 1.2mm | USpace4210-TopPanel-800W-1400D-1.2mm |
+
+### Door Panels (AirTech Vented)
+| Height | Width | Thickness | Part Number |
+|--------|-------|-----------|-------------|
+| 24U (1200mm) | 600mm | 1.0mm | USpace4210-DoorAirTech-24U-600W-1.0mm |
+| 24U (1200mm) | 600mm | 1.2mm | USpace4210-DoorAirTech-24U-600W-1.2mm |
+| 24U (1200mm) | 800mm | 1.0mm | USpace4210-DoorAirTech-24U-800W-1.0mm |
+| 24U (1200mm) | 800mm | 1.2mm | USpace4210-DoorAirTech-24U-800W-1.2mm |
+| 30U (1466mm) | 600mm | 1.0mm | USpace4210-DoorAirTech-30U-600W-1.0mm |
+| 30U (1466mm) | 600mm | 1.2mm | USpace4210-DoorAirTech-30U-600W-1.2mm |
+| 30U (1466mm) | 800mm | 1.0mm | USpace4210-DoorAirTech-30U-800W-1.0mm |
+| 30U (1466mm) | 800mm | 1.2mm | USpace4210-DoorAirTech-30U-800W-1.2mm |
+
+*Note: Table continues with similar patterns for 36U, 42U, and 48U doors, and would be repeated for other door types (AirTech Wardrobe, Solid Steel)*
+
+## Material Sheet Requirements
+
+| Component | Standard Thickness | Heavy Duty Thickness |
+|-----------|-------------------|---------------------|
+| Frame/Posts | 1.5mm | 2.0mm |
+| Side Panels | 1.0mm | 1.2mm |
+| Top/Bottom Covers | 1.2mm | N/A |
+| Doors (AirTech) | 1.0mm | 1.2mm |
+| Doors (Solid Steel) | 1.0mm | 1.2mm |
+| Mounting Angles | 2.0mm | N/A |
+| Infills (800w) | 1.5mm | N/A |
+
+## Thickness Application Guidelines
+
+| Configuration | Load Rating | Panel Thickness Requirement |
+|--------------|-------------|----------------------------|
+| Standard configurations | Up to 1102.31lbs/500kg | Standard thickness |
+| High-load configurations | Up to 3307.0lbs/1500kg | Heavy duty thickness |
+| Taller units (42U, 48U) | All load ratings | Consider heavy duty for side panels |
+| Deeper units (1200mm, 1400mm) | All load ratings | Consider heavy duty for top/bottom |

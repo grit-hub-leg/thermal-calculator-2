@@ -1,0 +1,78 @@
+# Configuration Rules Sheet
+
+# Rule Type Definitions
+A1: RuleID
+B1: RuleType
+C1: Condition
+D1: Action
+E1: Description
+
+# Material Thickness Rules
+A2: R001
+B2: MaterialThickness
+C2: LoadRating = "HeavyDuty"
+D2: CornerPost_Thickness = 2.0
+E2: Use 2.0mm thickness for corner posts in heavy duty configurations
+
+A3: R002
+B3: MaterialThickness
+C3: LoadRating = "HeavyDuty"
+D3: SidePanel_Thickness = 1.2
+E3: Use 1.2mm thickness for side panels in heavy duty configurations
+
+A4: R003
+B4: MaterialThickness
+C4: LoadRating = "HeavyDuty"
+D4: Door_Thickness = 1.2
+E4: Use 1.2mm thickness for doors in heavy duty configurations
+
+A5: R004
+B5: MaterialThickness
+C5: Height_U >= 42 AND Depth_mm >= 1000
+D5: SidePanel_Thickness = 1.2
+E5: Use 1.2mm thickness for side panels in tall/deep configurations
+
+# Component Selection Rules
+A6: R005
+B6: ComponentSelection
+C6: Width_mm = 800
+D6: Include_InfillPanels = TRUE
+E6: Include infill panels for 800mm wide configurations
+
+A7: R006
+B7: ComponentSelection
+C7: TopPanelType = "WithFanTray"
+D7: TopPanel_PartNumber = CONCATENATE("USpace4210-TopPanel-", Width_mm, "W-", Depth_mm, "D-FanTray-", TopPanel_Thickness, "mm")
+E7: Use fan tray top panel when specified
+
+A8: R007
+B8: ComponentSelection
+C8: BottomPanelType = "Vented"
+D8: BottomPanel_PartNumber = CONCATENATE("USpace4210-BottomPanel-", Width_mm, "W-", Depth_mm, "D-Vented-", BottomPanel_Thickness, "mm")
+E8: Use vented bottom panel when specified
+
+# Cooling System Rules
+A9: R008
+B9: ComponentSelection
+C9: Include_CoolingSystem = TRUE
+D9: RearDoor_PartNumber = CONCATENATE("USpace4210-DoorHX-", Height_U, "U-", Width_mm, "W-", Door_Thickness, "mm")
+E9: Use heat exchanger rear door when cooling system is included
+
+A10: R009
+B10: ComponentSelection
+C10: Include_CoolingSystem = TRUE AND Width_mm = 800
+D10: Include_InRow_Cooler = TRUE
+E10: Include in-row cooler for 800mm wide configurations with cooling
+
+# Special Configuration Rules
+A11: R010
+B11: ComponentSelection
+C11: LoadRating = "HeavyDuty" AND Height_U >= 42
+D11: Include_ReinforcedFrameSupports = TRUE
+E11: Add reinforced frame supports for tall heavy duty configurations
+
+A12: R011
+B12: ComponentSelection
+C12: Depth_mm >= 1200
+D12: Include_MiddleDepthSupports = TRUE
+E12: Add middle depth supports for extra deep configurations

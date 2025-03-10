@@ -1,0 +1,1228 @@
+# USpace4210 Solid Edge Automation Guide
+
+## Table of Contents
+1. [Setup and Environment Preparation](#setup-and-environment-preparation)
+2. [Design Configurator Implementation](#design-configurator-implementation)
+3. [Master Parameter Controller Setup](#master-parameter-controller-setup)
+4. [Family of Parts Automation](#family-of-parts-automation)
+5. [Alternate Assembly Automation](#alternate-assembly-automation)
+6. [Drawing Automation](#drawing-automation)
+7. [Complete Automation Scripts](#complete-automation-scripts)
+8. [Implementation Workflow](#implementation-workflow)
+9. [Testing and Validation](#testing-and-validation)
+10. [Troubleshooting](#troubleshooting)
+
+## Setup and Environment Preparation
+
+### Required Software and Tools
+- Solid Edge 2024 or later (recommended for latest automation features)
+- Visual Studio 2019/2022 (Visual Basic .NET)
+- Microsoft Excel (for configuration tables)
+
+### Initial Development Environment Setup
+
+1. **Install Visual Studio with Visual Basic .NET**:
+   - Download from Visual Studio website
+   - Select the ".NET desktop development" workload during installation
+
+2. **Create a New VB.NET Project**:
+   ```
+   1. Open Visual Studio
+   2. Select File > New > Project
+   3. Choose Visual Basic > Windows Desktop > Console App
+   4. Name it "USpace4210_Automation"
+   5. Click Create
+   ```
+
+3. **Add Solid Edge References**:
+   ```
+   1. Right-click on References in Solution Explorer
+   2. Select "Add Reference"
+   3. Go to COM tab
+   4. Select all Solid Edge libraries:
+      - Solid Edge Framework
+      - Solid Edge Framework Support
+      - Solid Edge Part
+      - Solid Edge Assembly
+      - Solid Edge Draft
+   5. Click OK
+   ```
+
+4. **Add Import Statements to Your Code**:
+   ```vb
+   Imports System.Runtime.InteropServices
+   Imports SolidEdgeFramework
+   Imports SolidEdgePart
+   Imports SolidEdgeAssembly
+   Imports SolidEdgeDraft
+   ```
+
+## Design Configurator Implementation
+
+### Configuration Table Setup
+
+1. **Create the Master Configuration Excel Table**:
+   
+   Create an Excel file named `USpace4210_Config.xlsx` with the following structure:
+
+   | ConfigID | Height_U | Width_mm | Depth_mm | DoorType_Front | DoorType_Rear | LoadRating | Material_Thickness |
+   |----------|----------|----------|----------|----------------|---------------|------------|-------------------|
+   | CFG001   | 24       | 600      | 600      | AirTech        | AirTech       | Standard   | 1.5               |
+   | CFG002   | 24       | 600      | 800      | AirTech        | AirTech       | Standard   | 1.5               |
+   | CFG003   | 24       | 600      | 1000     | AirTech        | AirTech       | Standard   | 1.5               |
+   | ...      | ...      | ...      | ...      | ...            | ...           | ...        | ...               |
+   | CFG050   | 48       | 800      | 1400     | Glass          | AirTech       | HeavyDuty  | 2.0               |
+
+2. **Import Configuration Table into Solid Edge**:
+   ```vb
+   Sub ImportConfigurationTable()
+       Dim application As SolidEdgeFramework.Application = Nothing
+       
+       Try
+           ' Get running Solid Edge instance
+           application = Marshal.GetActiveObject("SolidEdge.Application")
+           
+           ' Set up Design Configurator
+           Dim configManager As Object = application.GetDesignConfiguratorManager()
+           
+           ' Import Excel configuration table
+           configManager.ImportConfigurationTable("C:\USpace4210\USpace4210_Config.xlsx", "Sheet1")
+           
+           ' Verify import
+           Dim configCount As Integer = configManager.ConfigurationCount
+           Console.WriteLine("Imported " & configCount & " configurations.")
+           
+       Catch ex As Exception
+           Console.WriteLine("Error: " & ex.Message)
+       Finally
+           ' Clean up
+           application = Nothing
+       End Try
+   End Sub
+   ```
+
+### Design Configurator Rules Implementation
+
+Create rules that link configuration parameters to component selection:
+
+```vb
+Sub SetupConfiguratorRules()
+    Dim application As SolidEdgeFramework.Application = Nothing
+    
+    Try
+        ' Get running Solid Edge instance
+        application = Marshal.GetActiveObject("SolidEdge.Application")
+        
+        ' Set up Design Configurator
+        Dim configManager As Object = application.GetDesignConfiguratorManager()
+        Dim ruleManager As Object = configManager.GetRuleManager()
+        
+        ' Example rule: Select appropriate corner post thickness based on load rating
+        Dim rule1 As Object = ruleManager.CreateRule("CornerPostThicknessRule")
+        rule1.SetCondition("LoadRating = 'HeavyDuty'")
+        rule1.SetAction("CornerPost_MaterialThickness = '2.0mm'")
+        rule1.Activate()
+        
+        ' Example rule: Include infill panels when width is 800mm
+        Dim rule2 As Object = ruleManager.CreateRule("InfillPanelRule")
+        rule2.SetCondition("Width_mm = 800")
+        rule2.SetAction("Include_InfillPanels = TRUE")
+        rule2.Activate()
+        
+        ' Example rule: Use reinforced side panels for taller configurations
+        Dim rule3 As Object = ruleManager.CreateRule("ReinforcedSidePanelsRule")
+        rule3.SetCondition("Height_U >= 42 AND Depth_mm >= 1000")
+        rule3.SetAction("Use_ReinforcedPanels = TRUE")
+        rule3.Activate()
+        
+    Catch ex As Exception
+        Console.WriteLine("Error: " & ex.Message)
+    Finally
+        ' Clean up
+        application = Nothing
+    End Try
+End Sub
+```
+
+## Master Parameter Controller Setup
+
+### Creating the Master Parameter Part
+
+1. **Create and Structure the Controller Part**:
+
+```vb
+Sub CreateMasterParameterController()
+    Dim application As SolidEdgeFramework.Application = Nothing
+    Dim partDocument As SolidEdgePart.PartDocument = Nothing
+    Dim variables As SolidEdgeFramework.Variables = Nothing
+    
+    Try
+        ' Get running Solid Edge instance
+        application = Marshal.GetActiveObject("SolidEdge.Application")
+        
+        ' Create new part document
+        partDocument = CType(application.Documents.Add("SolidEdge.PartDocument"), SolidEdgePart.PartDocument)
+        
+        ' Get variables collection
+        variables = CType(partDocument.Variables, SolidEdgeFramework.Variables)
+        
+        ' Add global variables
+        AddDimensionVariable(variables, "Height_U", 42, "U")
+        AddDimensionVariable(variables, "Width_mm", 800, "mm")
+        AddDimensionVariable(variables, "Depth_mm", 1000, "mm")
+        AddDimensionVariable(variables, "DoorType_Front", "AirTech", "")
+        AddDimensionVariable(variables, "DoorType_Rear", "AirTech", "")
+        AddDimensionVariable(variables, "LoadRating", "Standard", "")
+        
+        ' Add derived variables
+        AddFormulaVariable(variables, "ActualHeight_mm", "Height_U * 44.45 + 13.1", "mm")
+        AddFormulaVariable(variables, "Frame_MaterialThickness", "IIF(LoadRating = ""HeavyDuty"", 2.0, 1.5)", "mm")
+        AddFormulaVariable(variables, "Panel_MaterialThickness", "IIF(LoadRating = ""HeavyDuty"", 1.2, 1.0)", "mm")
+        
+        ' Save the document
+        partDocument.SaveAs("C:\USpace4210\MasterController.par")
+        
+        Console.WriteLine("Master Parameter Controller created successfully.")
+        
+    Catch ex As Exception
+        Console.WriteLine("Error: " & ex.Message)
+    Finally
+        ' Clean up
+        partDocument = Nothing
+        application = Nothing
+    End Try
+End Sub
+
+' Helper function to add dimensional variable
+Sub AddDimensionVariable(variables As SolidEdgeFramework.Variables, name As String, value As Object, units As String)
+    Dim variable As SolidEdgeFramework.Variable
+    variable = variables.Add(name, value)
+    variable.Units = units
+    variable.Exposed = True
+End Sub
+
+' Helper function to add formula variable
+Sub AddFormulaVariable(variables As SolidEdgeFramework.Variables, name As String, formula As String, units As String)
+    Dim variable As SolidEdgeFramework.Variable
+    variable = variables.AddFormula(name, formula)
+    variable.Units = units
+    variable.Exposed = True
+End Sub
+```
+
+### Linking Master Controller to Components
+
+```vb
+Sub LinkMasterControllerToComponent(masterPath As String, componentPath As String)
+    Dim application As SolidEdgeFramework.Application = Nothing
+    Dim masterDoc As SolidEdgePart.PartDocument = Nothing
+    Dim componentDoc As SolidEdgePart.PartDocument = Nothing
+    
+    Try
+        ' Get running Solid Edge instance
+        application = Marshal.GetActiveObject("SolidEdge.Application")
+        
+        ' Open the master controller
+        masterDoc = CType(application.Documents.Open(masterPath), SolidEdgePart.PartDocument)
+        
+        ' Open the component document
+        componentDoc = CType(application.Documents.Open(componentPath), SolidEdgePart.PartDocument)
+        
+        ' Get variable collections
+        Dim masterVariables As SolidEdgeFramework.Variables = masterDoc.Variables
+        Dim componentVariables As SolidEdgeFramework.Variables = componentDoc.Variables
+        
+        ' Create a link to Height_U variable
+        Dim componentVar As SolidEdgeFramework.Variable = componentVariables.Add("Height_U", 0)
+        componentVar.AddLink(masterVariables.Item("Height_U"))
+        
+        ' Create a link to Width_mm variable
+        componentVar = componentVariables.Add("Width_mm", 0)
+        componentVar.AddLink(masterVariables.Item("Width_mm"))
+        
+        ' Create a link to Depth_mm variable
+        componentVar = componentVariables.Add("Depth_mm", 0)
+        componentVar.AddLink(masterVariables.Item("Depth_mm"))
+        
+        ' Create a link to material thickness
+        componentVar = componentVariables.Add("MaterialThickness", 0)
+        componentVar.AddLink(masterVariables.Item("Frame_MaterialThickness"))
+        
+        ' Save the component
+        componentDoc.Save()
+        
+        Console.WriteLine("Variables linked successfully.")
+        
+    Catch ex As Exception
+        Console.WriteLine("Error: " & ex.Message)
+    Finally
+        ' Clean up
+        componentDoc = Nothing
+        masterDoc = Nothing
+        application = Nothing
+    End Try
+End Sub
+```
+
+## Family of Parts Automation
+
+### Creating a Family of Parts for Corner Posts
+
+```vb
+Sub CreateCornerPostFamilyOfParts()
+    Dim application As SolidEdgeFramework.Application = Nothing
+    Dim partDocument As SolidEdgePart.PartDocument = Nothing
+    Dim familyOfParts As Object = Nothing
+    
+    Try
+        ' Get running Solid Edge instance
+        application = Marshal.GetActiveObject("SolidEdge.Application")
+        
+        ' Open the master corner post
+        partDocument = CType(application.Documents.Open("C:\USpace4210\CornerPost_Master.par"), SolidEdgePart.PartDocument)
+        
+        ' Get access to Family of Parts functionality
+        familyOfParts = partDocument.FamilyOfParts
+        
+        ' Create a new family table
+        Dim familyTable As Object = familyOfParts.FamilyTables.Add("CornerPostHeightVariations")
+        
+        ' Add variable columns to the table
+        familyTable.AddVariableColumn("Height_U")
+        familyTable.AddVariableColumn("MaterialThickness")
+        
+        ' Create family members for each height and material thickness
+        CreateCornerPostFamilyMember(familyTable, "CornerPost_24U_1.5mm", 24, 1.5)
+        CreateCornerPostFamilyMember(familyTable, "CornerPost_24U_2.0mm", 24, 2.0)
+        CreateCornerPostFamilyMember(familyTable, "CornerPost_30U_1.5mm", 30, 1.5)
+        CreateCornerPostFamilyMember(familyTable, "CornerPost_30U_2.0mm", 30, 2.0)
+        CreateCornerPostFamilyMember(familyTable, "CornerPost_36U_1.5mm", 36, 1.5)
+        CreateCornerPostFamilyMember(familyTable, "CornerPost_36U_2.0mm", 36, 2.0)
+        CreateCornerPostFamilyMember(familyTable, "CornerPost_42U_1.5mm", 42, 1.5)
+        CreateCornerPostFamilyMember(familyTable, "CornerPost_42U_2.0mm", 42, 2.0)
+        CreateCornerPostFamilyMember(familyTable, "CornerPost_48U_1.5mm", 48, 1.5)
+        CreateCornerPostFamilyMember(familyTable, "CornerPost_48U_2.0mm", 48, 2.0)
+        
+        ' Save the document
+        partDocument.Save()
+        
+        Console.WriteLine("Corner Post Family of Parts created successfully.")
+        
+    Catch ex As Exception
+        Console.WriteLine("Error: " & ex.Message)
+    Finally
+        ' Clean up
+        partDocument = Nothing
+        application = Nothing
+    End Try
+End Sub
+
+' Helper function to create family member
+Sub CreateCornerPostFamilyMember(familyTable As Object, memberName As String, heightU As Double, materialThickness As Double)
+    ' Add a new row for the family member
+    Dim tableRow As Object = familyTable.AddMember(memberName)
+    
+    ' Set values for the variables
+    tableRow.SetVariableValue("Height_U", heightU)
+    tableRow.SetVariableValue("MaterialThickness", materialThickness)
+End Sub
+```
+
+### Creating a Family of Parts for Side Panels
+
+```vb
+Sub CreateSidePanelFamilyOfParts()
+    Dim application As SolidEdgeFramework.Application = Nothing
+    Dim partDocument As SolidEdgePart.PartDocument = Nothing
+    Dim familyOfParts As Object = Nothing
+    
+    Try
+        ' Get running Solid Edge instance
+        application = Marshal.GetActiveObject("SolidEdge.Application")
+        
+        ' Open the master side panel
+        partDocument = CType(application.Documents.Open("C:\USpace4210\SidePanel_Master.par"), SolidEdgePart.PartDocument)
+        
+        ' Get access to Family of Parts functionality
+        familyOfParts = partDocument.FamilyOfParts
+        
+        ' Create a new family table
+        Dim familyTable As Object = familyOfParts.FamilyTables.Add("SidePanelVariations")
+        
+        ' Add variable columns to the table
+        familyTable.AddVariableColumn("Height_U")
+        familyTable.AddVariableColumn("Depth_mm")
+        familyTable.AddVariableColumn("MaterialThickness")
+        familyTable.AddVariableColumn("Side") ' Left or Right
+        
+        ' Create family members for standard depths (using sample subset for brevity)
+        ' For a 24U height
+        CreateSidePanelFamilyMember(familyTable, "SidePanel_24U_600D_1.0mm_Left", 24, 600, 1.0, "Left")
+        CreateSidePanelFamilyMember(familyTable, "SidePanel_24U_600D_1.0mm_Right", 24, 600, 1.0, "Right")
+        CreateSidePanelFamilyMember(familyTable, "SidePanel_24U_600D_1.2mm_Left", 24, 600, 1.2, "Left")
+        CreateSidePanelFamilyMember(familyTable, "SidePanel_24U_600D_1.2mm_Right", 24, 600, 1.2, "Right")
+        
+        ' For a 42U height with deep depth
+        CreateSidePanelFamilyMember(familyTable, "SidePanel_42U_1000D_1.0mm_Left", 42, 1000, 1.0, "Left")
+        CreateSidePanelFamilyMember(familyTable, "SidePanel_42U_1000D_1.0mm_Right", 42, 1000, 1.0, "Right")
+        CreateSidePanelFamilyMember(familyTable, "SidePanel_42U_1000D_1.2mm_Left", 42, 1000, 1.2, "Left")
+        CreateSidePanelFamilyMember(familyTable, "SidePanel_42U_1000D_1.2mm_Right", 42, 1000, 1.2, "Right")
+        
+        ' Save the document
+        partDocument.Save()
+        
+        Console.WriteLine("Side Panel Family of Parts created successfully.")
+        
+    Catch ex As Exception
+        Console.WriteLine("Error: " & ex.Message)
+    Finally
+        ' Clean up
+        partDocument = Nothing
+        application = Nothing
+    End Try
+End Sub
+
+' Helper function to create family member
+Sub CreateSidePanelFamilyMember(familyTable As Object, memberName As String, heightU As Double, depthMm As Double, materialThickness As Double, side As String)
+    ' Add a new row for the family member
+    Dim tableRow As Object = familyTable.AddMember(memberName)
+    
+    ' Set values for the variables
+    tableRow.SetVariableValue("Height_U", heightU)
+    tableRow.SetVariableValue("Depth_mm", depthMm)
+    tableRow.SetVariableValue("MaterialThickness", materialThickness)
+    tableRow.SetVariableValue("Side", side)
+End Sub
+```
+
+## Alternate Assembly Automation
+
+### Creating Configuration-Driven Alternate Assemblies
+
+```vb
+Sub CreateAlternateAssemblies()
+    Dim application As SolidEdgeFramework.Application = Nothing
+    Dim assemblyDocument As SolidEdgeAssembly.AssemblyDocument = Nothing
+    
+    Try
+        ' Get running Solid Edge instance
+        application = Marshal.GetActiveObject("SolidEdge.Application")
+        
+        ' Open the master assembly
+        assemblyDocument = CType(application.Documents.Open("C:\USpace4210\USpace4210_Master.asm"), SolidEdgeAssembly.AssemblyDocument)
+        
+        ' Get the Design Configurator manager
+        Dim configManager As Object = application.GetDesignConfiguratorManager()
+        
+        ' Get all configurations
+        Dim configurations As Object = configManager.GetConfigurations()
+        Dim configCount As Integer = configurations.Count
+        
+        ' Process each configuration to create an alternate assembly
+        For i As Integer = 1 To configCount
+            Dim config As Object = configurations.Item(i)
+            Dim configName As String = config.Name
+            
+            ' Create an alternate assembly for this configuration
+            CreateAlternateAssemblyForConfig(assemblyDocument, configName, config)
+        Next
+        
+        ' Save the document
+        assemblyDocument.Save()
+        
+        Console.WriteLine("Alternate Assemblies created successfully.")
+        
+    Catch ex As Exception
+        Console.WriteLine("Error: " & ex.Message)
+    Finally
+        ' Clean up
+        assemblyDocument = Nothing
+        application = Nothing
+    End Try
+End Sub
+
+' Helper function to create alternate assembly for a specific configuration
+Sub CreateAlternateAssemblyForConfig(assemblyDoc As SolidEdgeAssembly.AssemblyDocument, configName As String, config As Object)
+    ' Get alternate assembly collection
+    Dim alternateAssemblies As Object = assemblyDoc.AlternateAssemblies
+    
+    ' Create a new alternate assembly
+    Dim altAssembly As Object = alternateAssemblies.Add(configName)
+    
+    ' Get the parameters from the configuration
+    Dim height As Double = config.GetParameterValue("Height_U")
+    Dim width As Double = config.GetParameterValue("Width_mm")
+    Dim depth As Double = config.GetParameterValue("Depth_mm")
+    Dim doorTypeFront As String = config.GetParameterValue("DoorType_Front")
+    Dim doorTypeRear As String = config.GetParameterValue("DoorType_Rear")
+    Dim loadRating As String = config.GetParameterValue("LoadRating")
+    
+    ' Apply configuration to alternate assembly
+    ApplyConfigurationToAlternateAssembly(altAssembly, height, width, depth, doorTypeFront, doorTypeRear, loadRating)
+End Sub
+
+' Helper function to apply configuration to an alternate assembly
+Sub ApplyConfigurationToAlternateAssembly(altAssembly As Object, height As Double, width As Double, depth As Double, doorTypeFront As String, doorTypeRear As String, loadRating As String)
+    ' Get the occurrences collection
+    Dim occurrences As Object = altAssembly.Occurrences
+    
+    ' Apply configuration to corner posts
+    Dim cornerPostName As String = "CornerPost_" & height & "U_" & IIf(loadRating = "HeavyDuty", "2.0mm", "1.5mm")
+    
+    ' For each occurrence of corner post, set the appropriate family member
+    For Each occurrence In occurrences
+        If occurrence.Name.Contains("CornerPost") Then
+            occurrence.SetFamilyMember(cornerPostName)
+        End If
+    Next
+    
+    ' Apply configuration to side panels
+    Dim sidePanelThickness As String = IIf(loadRating = "HeavyDuty", "1.2mm", "1.0mm")
+    Dim sidePanelLeftName As String = "SidePanel_" & height & "U_" & depth & "D_" & sidePanelThickness & "_Left"
+    Dim sidePanelRightName As String = "SidePanel_" & height & "U_" & depth & "D_" & sidePanelThickness & "_Right"
+    
+    For Each occurrence In occurrences
+        If occurrence.Name.Contains("SidePanel_Left") Then
+            occurrence.SetFamilyMember(sidePanelLeftName)
+        ElseIf occurrence.Name.Contains("SidePanel_Right") Then
+            occurrence.SetFamilyMember(sidePanelRightName)
+        End If
+    Next
+    
+    ' Apply configuration to top/bottom panels
+    Dim topPanelName As String = "TopPanel_" & width & "W_" & depth & "D_1.2mm"
+    Dim bottomPanelName As String = "BottomPanel_" & width & "W_" & depth & "D_1.2mm"
+    
+    For Each occurrence In occurrences
+        If occurrence.Name.Contains("TopPanel") Then
+            occurrence.SetFamilyMember(topPanelName)
+        ElseIf occurrence.Name.Contains("BottomPanel") Then
+            occurrence.SetFamilyMember(bottomPanelName)
+        End If
+    Next
+    
+    ' Apply configuration to doors
+    Dim frontDoorName As String = "Door_" & height & "U_" & width & "W_" & doorTypeFront & "_" & sidePanelThickness
+    Dim rearDoorName As String = "Door_" & height & "U_" & width & "W_" & doorTypeRear & "_" & sidePanelThickness
+    
+    For Each occurrence In occurrences
+        If occurrence.Name.Contains("FrontDoor") Then
+            occurrence.SetFamilyMember(frontDoorName)
+        ElseIf occurrence.Name.Contains("RearDoor") Then
+            occurrence.SetFamilyMember(rearDoorName)
+        End If
+    Next
+    
+    ' Handle special case for infill panels (only for 800mm width)
+    If width = 800 Then
+        ' Show infill panels
+        For Each occurrence In occurrences
+            If occurrence.Name.Contains("InfillPanel") Then
+                occurrence.Visible = True
+            End If
+        Next
+    Else
+        ' Hide infill panels
+        For Each occurrence In occurrences
+            If occurrence.Name.Contains("InfillPanel") Then
+                occurrence.Visible = False
+            End If
+        Next
+    End If
+End Sub
+```
+
+## Drawing Automation
+
+### Creating Drawing Templates
+
+```vb
+Sub CreateDrawingTemplates()
+    Dim application As SolidEdgeFramework.Application = Nothing
+    Dim draftDocument As SolidEdgeDraft.DraftDocument = Nothing
+    
+    Try
+        ' Get running Solid Edge instance
+        application = Marshal.GetActiveObject("SolidEdge.Application")
+        
+        ' Create a new draft document
+        draftDocument = CType(application.Documents.Add("SolidEdge.DraftDocument"), SolidEdgeDraft.DraftDocument)
+        
+        ' Set up drawing sheet
+        Dim sheet As SolidEdgeDraft.Sheet = draftDocument.Sheets.Item(1)
+        sheet.SetSize(SolidEdgeDraft.SheetSizeConstants.seSheetSizeA1)
+        sheet.SetOrientation(SolidEdgeDraft.SheetOrientationConstants.seSheetLandscape)
+        
+        ' Create a background with title block
+        Dim background As SolidEdgeDraft.Background = sheet.Background
+        CreateTitleBlock(background)
+        
+        ' Set up drawing variables
+        Dim variables As SolidEdgeFramework.Variables = draftDocument.Variables
+        AddDraftVariable(variables, "CONFIG_ID", "", "")
+        AddDraftVariable(variables, "HEIGHT_U", "", "")
+        AddDraftVariable(variables, "WIDTH_MM", "", "")
+        AddDraftVariable(variables, "DEPTH_MM", "", "")
+        AddDraftVariable(variables, "LOAD_RATING", "", "")
+        
+        ' Save as template
+        draftDocument.SaveAs("C:\USpace4210\Templates\USpace4210_Assembly_Template.dft")
+        
+        Console.WriteLine("Drawing template created successfully.")
+        
+    Catch ex As Exception
+        Console.WriteLine("Error: " & ex.Message)
+    Finally
+        ' Clean up
+        draftDocument = Nothing
+        application = Nothing
+    End Try
+End Sub
+
+' Helper function to create title block
+Sub CreateTitleBlock(background As SolidEdgeDraft.Background)
+    ' Create rectangle for title block
+    Dim lines2d As SolidEdgeDraft.Lines2d = background.Lines2d
+    Dim rect As Object = lines2d.AddRectangle(10, 10, 410, 280)
+    
+    ' Add text for title block
+    Dim textBlocks As SolidEdgeDraft.TextBlocks = background.TextBlocks
+    
+    ' Add title
+    Dim titleText As SolidEdgeDraft.TextBlock = textBlocks.Add("USpace4210 Enclosure", 30, 250, 0)
+    titleText.Bold = True
+    titleText.FontSize = 7
+    
+    ' Add configuration ID variable
+    Dim configText As SolidEdgeDraft.TextBlock = textBlocks.Add("Configuration: %CONFIG_ID%", 30, 235, 0)
+    configText.FontSize = 5
+    
+    ' Add dimensions variables
+    Dim dimText As SolidEdgeDraft.TextBlock = textBlocks.Add("Height: %HEIGHT_U%U  Width: %WIDTH_MM%mm  Depth: %DEPTH_MM%mm", 30, 220, 0)
+    dimText.FontSize = 5
+    
+    ' Add load rating variable
+    Dim loadText As SolidEdgeDraft.TextBlock = textBlocks.Add("Load Rating: %LOAD_RATING%", 30, 205, 0)
+    loadText.FontSize = 5
+    
+    ' Add company info
+    Dim companyText As SolidEdgeDraft.TextBlock = textBlocks.Add("Company Name", 30, 30, 0)
+    companyText.Bold = True
+    companyText.FontSize = 6
+    
+    ' Add drawing number and revision
+    Dim dwgText As SolidEdgeDraft.TextBlock = textBlocks.Add("Drawing No.: USpace4210-%CONFIG_ID%", 250, 30, 0)
+    dwgText.FontSize = 5
+    
+    Dim revText As SolidEdgeDraft.TextBlock = textBlocks.Add("Rev.: A", 350, 30, 0)
+    revText.FontSize = 5
+End Sub
+
+' Helper function to add a draft variable
+Sub AddDraftVariable(variables As SolidEdgeFramework.Variables, name As String, value As String, units As String)
+    Dim variable As SolidEdgeFramework.Variable
+    variable = variables.Add(name, value)
+    variable.Units = units
+    variable.Exposed = True
+End Sub
+```
+
+### Automated Drawing Creation for All Configurations
+
+```vb
+Sub CreateDrawingsForAllConfigurations()
+    Dim application As SolidEdgeFramework.Application = Nothing
+    Dim configManager As Object = Nothing
+    
+    Try
+        ' Get running Solid Edge instance
+        application = Marshal.GetActiveObject("SolidEdge.Application")
+        
+        ' Get the Design Configurator manager
+        configManager = application.GetDesignConfiguratorManager()
+        
+        ' Get all configurations
+        Dim configurations As Object = configManager.GetConfigurations()
+        Dim configCount As Integer = configurations.Count
+        
+        ' Process each configuration to create a drawing
+        For i As Integer = 1 To configCount
+            Dim config As Object = configurations.Item(i)
+            Dim configName As String = config.Name
+            
+            ' Create a drawing for this configuration
+            CreateDrawingForConfiguration(configName, config)
+        Next
+        
+        Console.WriteLine("All drawings created successfully.")
+        
+    Catch ex As Exception
+        Console.WriteLine("Error: " & ex.Message)
+    Finally
+        ' Clean up
+        application = Nothing
+    End Try
+End Sub
+
+' Helper function to create a drawing for a specific configuration
+Sub CreateDrawingForConfiguration(configName As String, config As Object)
+    Dim application As SolidEdgeFramework.Application = Nothing
+    Dim assemblyDoc As SolidEdgeAssembly.AssemblyDocument = Nothing
+    Dim draftDoc As SolidEdgeDraft.DraftDocument = Nothing
+    
+    Try
+        ' Get running Solid Edge instance
+        application = Marshal.GetActiveObject("SolidEdge.Application")
+        
+        ' Get configuration parameters
+        Dim height As Double = config.GetParameterValue("Height_U")
+        Dim width As Double = config.GetParameterValue("Width_mm")
+        Dim depth As Double = config.GetParameterValue("Depth_mm")
+        Dim loadRating As String = config.GetParameterValue("LoadRating")
+        
+        ' Open the assembly document with the appropriate alternate assembly active
+        assemblyDoc = CType(application.Documents.Open("C:\USpace4210\USpace4210_Master.asm"), SolidEdgeAssembly.AssemblyDocument)
+        
+        ' Activate the alternate assembly for this configuration
+        Dim alternateAssemblies As Object = assemblyDoc.AlternateAssemblies
+        For i As Integer = 1 To alternateAssemblies.Count
+            Dim altAssembly As Object = alternateAssemblies.Item(i)
+            If altAssembly.Name = configName Then
+                altAssembly.Activate()
+                Exit For
+            End If
+        Next
+        
+        ' Create a new draft document from template
+        draftDoc = CType(application.Documents.Add("SolidEdge.DraftDocument", "C:\USpace4210\Templates\USpace4210_Assembly_Template.dft"), SolidEdgeDraft.DraftDocument)
+        
+        ' Set drawing variables
+        Dim variables As SolidEdgeFramework.Variables = draftDoc.Variables
+        variables.Item("CONFIG_ID").Value = configName
+        variables.Item("HEIGHT_U").Value = height
+        variables.Item("WIDTH_MM").Value = width
+        variables.Item("DEPTH_MM").Value = depth
+        variables.Item("LOAD_RATING").Value = loadRating
+        
+        ' Get active sheet
+        Dim sheet As SolidEdgeDraft.Sheet = draftDoc.ActiveSheet
+        
+        ' Create drawing views
+        CreateStandardDrawingViews(sheet, assemblyDoc)
+        
+        ' Save the drawing
+        Dim drawingFilename As String = "C:\USpace4210\Drawings\USpace4210_" & configName & ".dft"
+        draftDoc.SaveAs(drawingFilename)
+        
+        ' Export to PDF
+        Dim pdfFilename As String = "C:\USpace4210\PDFs\USpace4210_" & configName & ".pdf"
+        draftDoc.ExportToPDF(pdfFilename)
+        
+        ' Close the documents
+        draftDoc.Close()
+        assemblyDoc.Close()
+        
+        Console.WriteLine("Drawing created for configuration: " & configName)
+        
+    Catch ex As Exception
+        Console.WriteLine("Error creating drawing for " & configName & ": " & ex.Message)
+    Finally
+        ' Clean up
+        draftDoc = Nothing
+        assemblyDoc = Nothing
+    End Try
+End Sub
+
+' Helper function to create standard drawing views
+Sub CreateStandardDrawingViews(sheet As SolidEdgeDraft.Sheet, modelDoc As SolidEdgeAssembly.AssemblyDocument)
+    ' Create the drawing views collection
+    Dim drawingViews As SolidEdgeDraft.DrawingViews = sheet.DrawingViews
+    
+    ' Create front view
+    Dim frontView As SolidEdgeDraft.DrawingView = drawingViews.AddModelView(modelDoc, 150, 150, 0.1)
+    frontView.SetViewOrientation(SolidEdgeDraft.ViewOrientationConstants.seIsometricTopRightView)
+    
+    ' Create top view
+    Dim topView As SolidEdgeDraft.DrawingView = drawingViews.AddModelView(modelDoc, 400, 150, 0.1)
+    topView.SetViewOrientation(SolidEdgeDraft.ViewOrientationConstants.seTopView)
+    
+    ' Create side view
+    Dim sideView As SolidEdgeDraft.DrawingView = drawingViews.AddModelView(modelDoc, 150, 300, 0.1)
+    sideView.SetViewOrientation(SolidEdgeDraft.ViewOrientationConstants.seRightView)
+    
+    ' Create detail view
+    Dim detailView As SolidEdgeDraft.DrawingView = drawingViews.AddDetailView(frontView, 350, 300, 0.2, 50, 50, 25)
+    
+    ' Create section view
+    Dim sectionView As SolidEdgeDraft.DrawingView = drawingViews.AddSectionView(frontView, 500, 300, "A-A", 0, 0, 200, 0)
+    
+    ' Add dimensions automatically
+    frontView.AddAutoDimensions()
+    
+    ' Add parts list
+    Dim partsLists As SolidEdgeDraft.PartsLists = sheet.PartsLists
+    Dim partsList As SolidEdgeDraft.PartsList = partsLists.Add(frontView, 600, 150)
+End Sub
+```
+
+## Complete Automation Scripts
+
+Here is a complete script that combines all the automation processes into a unified workflow:
+
+```vb
+Module USpace4210_Automation
+    Sub Main()
+        Console.WriteLine("USpace4210 Automation Process Starting...")
+        
+        ' Step 1: Create Master Parameter Controller
+        Console.WriteLine("Creating Master Parameter Controller...")
+        CreateMasterParameterController()
+        
+        ' Step 2: Create Family of Parts for all components
+        Console.WriteLine("Creating Family of Parts for all components...")
+        CreateCornerPostFamilyOfParts()
+        CreateSidePanelFamilyOfParts()
+        CreateTopPanelFamilyOfParts()
+        CreateBottomPanelFamilyOfParts()
+        CreateDoorFamilyOfParts()
+        
+        ' Step 3: Import and Set up Configuration Table
+        Console.WriteLine("Importing Configuration Table...")
+        ImportConfigurationTable()
+        
+        ' Step 4: Set up Configurator Rules
+        Console.WriteLine("Setting up Configurator Rules...")
+        SetupConfiguratorRules()
+        
+        ' Step 5: Create Alternate Assemblies for all configurations
+        Console.WriteLine("Creating Alternate Assemblies...")
+        CreateAlternateAssemblies()
+        
+        ' Step 6: Create Drawing Templates
+        Console.WriteLine("Creating Drawing Templates...")
+        CreateDrawingTemplates()
+        
+        ' Step 7: Generate Drawings for all configurations
+        Console.WriteLine("Generating Drawings for all configurations...")
+        CreateDrawingsForAllConfigurations()
+        
+        Console.WriteLine("USpace4210 Automation Process Completed.")
+        Console.WriteLine("Press any key to exit...")
+        Console.ReadKey()
+    End Sub
+    
+    ' Include all the previously defined functions here...
+End Module
+```
+
+## Implementation Workflow
+
+To successfully implement this automation system, follow this step-by-step workflow:
+
+1. **Preparation Phase**:
+   - Set up folder structure for project organization
+   - Install required software (Solid Edge, Visual Studio)
+   - Create the configuration spreadsheet
+
+2. **Development Phase**:
+   - Create the Master Parameter Controller
+   - Develop Master Parts with parametric features
+   - Implement Family of Parts for all component types
+   - Set up Design Configurator with rules
+   - Create the Master Assembly with placeholders
+   - Develop Drawing Templates
+
+3. **Testing Phase**:
+   - Test with a subset of configurations
+   - Validate parameter propagation
+   - Verify assembly configurations
+   - Check drawing generation for accuracy
+
+4. **Full Implementation Phase**:
+   - Generate all Family of Parts members
+   - Create all Alternate Assemblies
+   - Generate drawings for all configurations
+   - Validate output for completeness
+
+5. **Maintenance Phase**:
+   - Document system architecture
+   - Create change management procedures
+   - Train team members on system usage
+   - Establish update protocols for future changes
+
+## Testing and Validation
+
+Implement these validation procedures to ensure the system works correctly:
+
+```vb
+Sub ValidateConfigurationSystem()
+    Dim application As SolidEdgeFramework.Application = Nothing
+    
+    Try
+        ' Get running Solid Edge instance
+        application = Marshal.GetActiveObject("SolidEdge.Application")
+        
+        ' Get the Design Configurator manager
+        Dim configManager As Object = application.GetDesignConfiguratorManager()
+        
+        ' Get all configurations
+        Dim configurations As Object = configManager.GetConfigurations()
+        Dim configCount As Integer = configurations.Count
+        
+        Console.WriteLine("Testing " & configCount & " configurations...")
+        
+        ' Validation counters
+        Dim validConfigs As Integer = 0
+        Dim invalidConfigs As Integer = 0
+        
+        ' Process each configuration for validation
+        For i As Integer = 1 To configCount
+            Dim config As Object = configurations.Item(i)
+            Dim configName As String = config.Name
+            
+            ' Validate this configuration
+            If ValidateConfiguration(configName, config) Then
+                validConfigs += 1
+            Else
+                invalidConfigs += 1
+            End If
+        Next
+        
+        Console.WriteLine("Validation complete.")
+        Console.WriteLine("Valid configurations: " & validConfigs)
+        Console.WriteLine("Invalid configurations: " & invalidConfigs)
+        
+    Catch ex As Exception
+        Console.WriteLine("Error during validation: " & ex.Message)
+    Finally
+        ' Clean up
+        application = Nothing
+    End Try
+End Sub
+
+' Helper function to validate a specific configuration
+Function ValidateConfiguration(configName As String, config As Object) As Boolean
+    Dim application As SolidEdgeFramework.Application = Nothing
+    Dim assemblyDoc As SolidEdgeAssembly.AssemblyDocument = Nothing
+    Dim valid As Boolean = True
+    
+    Try
+        ' Get running Solid Edge instance
+        application = Marshal.GetActiveObject("SolidEdge.Application")
+        
+        ' Open the assembly document with the alternate assembly
+        assemblyDoc = CType(application.Documents.Open("C:\USpace4210\USpace4210_Master.asm"), SolidEdgeAssembly.AssemblyDocument)
+        
+        ' Check if alternate assembly exists
+        Dim alternateAssemblies As Object = assemblyDoc.AlternateAssemblies
+        Dim altAssemblyExists As Boolean = False
+        
+        For i As Integer = 1 To alternateAssemblies.Count
+            Dim altAssembly As Object = alternateAssemblies.Item(i)
+            If altAssembly.Name = configName Then
+                altAssembly.Activate()
+                altAssemblyExists = True
+                Exit For
+            End If
+        Next
+        
+        If Not altAssemblyExists Then
+            Console.WriteLine("Configuration " & configName & " does not have an alternate assembly")
+            valid = False
+        End If
+        
+        ' Verify all components exist
+        If valid Then
+            ' Get configuration parameters
+            Dim height As Double = config.GetParameterValue("Height_U")
+            Dim width As Double = config.GetParameterValue("Width_mm")
+            Dim depth As Double = config.GetParameterValue("Depth_mm")
+            Dim loadRating As String = config.GetParameterValue("LoadRating")
+            
+            ' Check for required components
+            valid = ValidateComponents(assemblyDoc, height, width, depth, loadRating)
+        End If
+        
+        ' Check if drawing exists
+        Dim drawingFilename As String = "C:\USpace4210\Drawings\USpace4210_" & configName & ".dft"
+        If Not System.IO.File.Exists(drawingFilename) Then
+            Console.WriteLine("Drawing file for " & configName & " does not exist")
+            valid = False
+        End If
+        
+        ' Close the document
+        assemblyDoc.Close()
+        
+        If valid Then
+            Console.WriteLine("Configuration " & configName & " is valid")
+        Else
+            Console.WriteLine("Configuration " & configName & " is invalid")
+        End If
+        
+        Return valid
+        
+    Catch ex As Exception
+        Console.WriteLine("Error validating configuration " & configName & ": " & ex.Message)
+        Return False
+    Finally
+        ' Clean up
+        assemblyDoc = Nothing
+    End Try
+End Function
+
+' Helper function to validate components
+Function ValidateComponents(assemblyDoc As SolidEdgeAssembly.AssemblyDocument, height As Double, width As Double, depth As Double, loadRating As String) As Boolean
+    Dim valid As Boolean = True
+    
+    ' Get occurrences collection
+    Dim occurrences As SolidEdgeAssembly.Occurrences = assemblyDoc.Occurrences
+    
+    ' Check corner posts - should have 4
+    Dim cornerPostCount As Integer = 0
+    Dim materialThickness As String = IIf(loadRating = "HeavyDuty", "2.0mm", "1.5mm")
+    
+    For Each occurrence In occurrences
+        If occurrence.Name.Contains("CornerPost") Then
+            cornerPostCount += 1
+            ' Check if it's the right version
+            If Not occurrence.Name.Contains(height & "U") Or Not occurrence.Name.Contains(materialThickness) Then
+                Console.WriteLine("Corner post has incorrect configuration: " & occurrence.Name)
+                valid = False
+            End If
+        End If
+    Next
+    
+    If cornerPostCount <> 4 Then
+        Console.WriteLine("Expected 4 corner posts, found " & cornerPostCount)
+        valid = False
+    End If
+    
+    ' Check side panels - should have 2 (left and right)
+    Dim sidePanelCount As Integer = 0
+    Dim sidePanelThickness As String = IIf(loadRating = "HeavyDuty", "1.2mm", "1.0mm")
+    
+    For Each occurrence In occurrences
+        If occurrence.Name.Contains("SidePanel") Then
+            sidePanelCount += 1
+            ' Check if it's the right version
+            If Not occurrence.Name.Contains(height & "U") Or Not occurrence.Name.Contains(depth & "D") Or Not occurrence.Name.Contains(sidePanelThickness) Then
+                Console.WriteLine("Side panel has incorrect configuration: " & occurrence.Name)
+                valid = False
+            End If
+        End If
+    Next
+    
+    If sidePanelCount <> 2 Then
+        Console.WriteLine("Expected 2 side panels, found " & sidePanelCount)
+        valid = False
+    End If
+    
+    ' Check top/bottom panels
+    Dim topPanelCount As Integer = 0
+    Dim bottomPanelCount As Integer = 0
+    
+    For Each occurrence In occurrences
+        If occurrence.Name.Contains("TopPanel") Then
+            topPanelCount += 1
+            ' Check if it's the right version
+            If Not occurrence.Name.Contains(width & "W") Or Not occurrence.Name.Contains(depth & "D") Then
+                Console.WriteLine("Top panel has incorrect configuration: " & occurrence.Name)
+                valid = False
+            End If
+        ElseIf occurrence.Name.Contains("BottomPanel") Then
+            bottomPanelCount += 1
+            ' Check if it's the right version
+            If Not occurrence.Name.Contains(width & "W") Or Not occurrence.Name.Contains(depth & "D") Then
+                Console.WriteLine("Bottom panel has incorrect configuration: " & occurrence.Name)
+                valid = False
+            End If
+        End If
+    Next
+    
+    If topPanelCount <> 1 Then
+        Console.WriteLine("Expected 1 top panel, found " & topPanelCount)
+        valid = False
+    End If
+    
+    If bottomPanelCount <> 1 Then
+        Console.WriteLine("Expected 1 bottom panel, found " & bottomPanelCount)
+        valid = False
+    End If
+    
+    ' Check infill panels (only for 800mm width)
+    If width = 800 Then
+        Dim infillCount As Integer = 0
+        For Each occurrence In occurrences
+            If occurrence.Name.Contains("InfillPanel") Then
+                infillCount += 1
+                ' Check if it's visible
+                If Not occurrence.Visible Then
+                    Console.WriteLine("Infill panel should be visible for 800mm width")
+                    valid = False
+                End If
+            End If
+        Next
+        
+        If infillCount = 0 Then
+            Console.WriteLine("Expected infill panels for 800mm width, none found")
+            valid = False
+        End If
+    End If
+    
+    Return valid
+End Function
+```
+
+## Troubleshooting
+
+Common issues and solutions:
+
+1. **Parameter Linking Failures**:
+   ```vb
+   ' Check if parameters are correctly linked
+   Sub CheckParameterLinks()
+       Dim application As SolidEdgeFramework.Application = Nothing
+       Dim masterDoc As SolidEdgePart.PartDocument = Nothing
+       
+       Try
+           ' Get running Solid Edge instance
+           application = Marshal.GetActiveObject("SolidEdge.Application")
+           
+           ' Open the master controller
+           masterDoc = CType(application.Documents.Open("C:\USpace4210\MasterController.par"), SolidEdgePart.PartDocument)
+           
+           ' Get variables collection
+           Dim variables As SolidEdgeFramework.Variables = masterDoc.Variables
+           
+           ' Check each variable for links
+           Console.WriteLine("Checking parameter links in Master Controller...")
+           
+           For i As Integer = 1 To variables.Count
+               Dim variable As SolidEdgeFramework.Variable = variables.Item(i)
+               Console.WriteLine("Variable: " & variable.Name)
+               
+               ' Check if variable has links
+               Dim linkCount As Integer = variable.LinkCount
+               Console.WriteLine("  Link count: " & linkCount)
+               
+               If linkCount > 0 Then
+                   For j As Integer = 1 To linkCount
+                       Dim link As Object = variable.Links.Item(j)
+                       Console.WriteLine("  Linked to: " & link.Document.Name & " - " & link.Name)
+                   Next
+               End If
+           Next
+           
+       Catch ex As Exception
+           Console.WriteLine("Error checking parameter links: " & ex.Message)
+       Finally
+           ' Clean up
+           masterDoc = Nothing
+           application = Nothing
+       End Try
+   End Sub
+   ```
+
+2. **Missing Family Members**:
+   ```vb
+   ' Check if all family members exist
+   Sub CheckFamilyMembers(partPath As String)
+       Dim application As SolidEdgeFramework.Application = Nothing
+       Dim partDocument As SolidEdgePart.PartDocument = Nothing
+       
+       Try
+           ' Get running Solid Edge instance
+           application = Marshal.GetActiveObject("SolidEdge.Application")
+           
+           ' Open the part document
+           partDocument = CType(application.Documents.Open(partPath), SolidEdgePart.PartDocument)
+           
+           ' Check family of parts
+           Dim familyOfParts As Object = partDocument.FamilyOfParts
+           
+           If familyOfParts.FamilyTables.Count = 0 Then
+               Console.WriteLine("No family tables found.")
+               Return
+           End If
+           
+           Dim familyTable As Object = familyOfParts.FamilyTables.Item(1)
+           Dim memberCount As Integer = familyTable.MemberCount
+           
+           Console.WriteLine("Family members in " & System.IO.Path.GetFileName(partPath) & ":")
+           Console.WriteLine("Total members: " & memberCount)
+           
+           For i As Integer = 1 To memberCount
+               Dim member As Object = familyTable.Members.Item(i)
+               Console.WriteLine("  " & i & ": " & member.Name)
+           Next
+           
+       Catch ex As Exception
+           Console.WriteLine("Error checking family members: " & ex.Message)
+       Finally
+           ' Clean up
+           partDocument = Nothing
+           application = Nothing
+       End Try
+   End Sub
+   ```
+
+3. **Drawing Automation Errors**:
+   ```vb
+   ' Repair broken drawing views
+   Sub RepairDrawingViews(draftPath As String)
+       Dim application As SolidEdgeFramework.Application = Nothing
+       Dim draftDocument As SolidEdgeDraft.DraftDocument = Nothing
+       
+       Try
+           ' Get running Solid Edge instance
+           application = Marshal.GetActiveObject("SolidEdge.Application")
+           
+           ' Open the draft document
+           draftDocument = CType(application.Documents.Open(draftPath), SolidEdgeDraft.DraftDocument)
+           
+           ' Get the sheets collection
+           Dim sheets As SolidEdgeDraft.Sheets = draftDocument.Sheets
+           
+           ' Process each sheet
+           For i As Integer = 1 To sheets.Count
+               Dim sheet As SolidEdgeDraft.Sheet = sheets.Item(i)
+               Dim drawingViews As SolidEdgeDraft.DrawingViews = sheet.DrawingViews
+               
+               Console.WriteLine("Sheet " & i & " has " & drawingViews.Count & " views.")
+               
+               ' Check and repair each drawing view
+               For j As Integer = 1 To drawingViews.Count
+                   Dim drawingView As SolidEdgeDraft.DrawingView = drawingViews.Item(j)
+                   
+                   If drawingView.Broken Then
+                       Console.WriteLine("  View " & j & " is broken.")
+                       
+                       ' Try to repair the view
+                       If drawingView.ModelLink <> "" Then
+                           ' Try to update the model link
+                           drawingView.UpdateModelLink()
+                           
+                           If Not drawingView.Broken Then
+                               Console.WriteLine("  View " & j & " repaired successfully.")
+                           Else
+                               Console.WriteLine("  Unable to repair view " & j & ".")
+                           End If
+                       End If
+                   Else
+                       Console.WriteLine("  View " & j & " is OK.")
+                   End If
+               Next
+           Next
+           
+           ' Save the document
+           draftDocument.Save()
+           
+       Catch ex As Exception
+           Console.WriteLine("Error repairing drawing views: " & ex.Message)
+       Finally
+           ' Clean up
+           draftDocument = Nothing
+           application = Nothing
+       End Try
+   End Sub
+   ```

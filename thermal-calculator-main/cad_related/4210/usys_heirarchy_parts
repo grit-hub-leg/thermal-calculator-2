@@ -1,0 +1,296 @@
+# USpace 4210 Model Hierarchy & Master Parts Structure
+
+## Top-Level Assembly Structure
+
+```
+USpace4210-Assembly (Master)
+├── 01_Frame_Assembly
+│   ├── CornerPost_Assembly (×4)
+│   ├── TopFrame_Assembly
+│   ├── BottomFrame_Assembly
+│   └── DepthSupport_Rails
+├── 02_Panel_Assembly
+│   ├── SidePanel_Assembly_Left
+│   ├── SidePanel_Assembly_Right
+│   ├── TopPanel_Assembly
+│   └── BottomPanel_Assembly
+├── 03_Door_Assembly
+│   ├── FrontDoor_Assembly
+│   └── RearDoor_Assembly
+├── 04_19inch_Rail_Assembly
+│   ├── FrontRail_Assembly
+│   └── RearRail_Assembly
+├── 05_Accessories
+│   ├── CastorAssembly
+│   ├── EarthKit
+│   └── CableManagement
+└── 06_Infill_Assembly (800W models only)
+    └── FrontInfillPanel
+```
+
+## Master Parts Structure
+
+### 1. Frame Components
+
+#### 1.1 Corner Post Master
+```
+CornerPost_Master.par
+├── Variables
+│   ├── Height (U_Value × 44.45mm + offset)
+│   ├── MaterialThickness (1.5mm or 2.0mm)
+│   └── HolePitch (Standard 1U spacing)
+├── Features
+│   ├── BaseProfile
+│   ├── ExtrudedLength
+│   ├── MountingHoles
+│   └── ThreadedInserts
+└── Configurations
+    ├── Standard (1.5mm)
+    └── HeavyDuty (2.0mm)
+```
+
+#### 1.2 Top/Bottom Frame Master
+```
+FrameEnd_Master.par
+├── Variables
+│   ├── Width (600mm or 800mm)
+│   ├── Depth (600mm to 1400mm)
+│   ├── MaterialThickness (1.5mm or 2.0mm)
+│   └── CableCutouts (Boolean)
+├── Features
+│   ├── BaseProfile
+│   ├── CableAccess (conditional)
+│   ├── MountingTabs
+│   └── CornerConnectors
+└── Configurations
+    ├── Top (with cutouts)
+    └── Bottom (with castor mounts)
+```
+
+#### 1.3 Depth Support Rails Master
+```
+DepthSupportRail_Master.par
+├── Variables
+│   ├── Depth (600mm to 1400mm minus offsets)
+│   ├── MaterialThickness (1.5mm)
+│   └── MountingType
+├── Features
+│   ├── RailProfile
+│   ├── Length
+│   └── MountingHoles
+└── Configurations
+    ├── Left
+    └── Right
+```
+
+### 2. Panel Components
+
+#### 2.1 Side Panel Master
+```
+SidePanel_Master.par
+├── Variables
+│   ├── Height (U_Value × 44.45mm + offset)
+│   ├── Depth (600mm to 1400mm + offset)
+│   ├── MaterialThickness (1.0mm or 1.2mm)
+│   └── LockType (Cam)
+├── Features
+│   ├── PanelSheet
+│   ├── Flanges
+│   ├── Stiffeners (conditional based on size)
+│   └── LockMountings
+└── Configurations
+    ├── Standard (1.0mm)
+    ├── HeavyDuty (1.2mm)
+    ├── Left
+    └── Right
+```
+
+#### 2.2 Top Panel Master
+```
+TopPanel_Master.par
+├── Variables
+│   ├── Width (600mm or 800mm + offset)
+│   ├── Depth (600mm to 1400mm + offset)
+│   ├── MaterialThickness (1.2mm)
+│   └── FanCutouts (Boolean)
+├── Features
+│   ├── PanelSheet
+│   ├── Flanges
+│   ├── CableAccess
+│   └── KnockoutPatterns
+└── Configurations
+    ├── Standard
+    └── WithFanTray
+```
+
+#### 2.3 Bottom Panel Master
+```
+BottomPanel_Master.par
+├── Variables
+│   ├── Width (600mm or 800mm + offset)
+│   ├── Depth (600mm to 1400mm + offset)
+│   ├── MaterialThickness (1.2mm)
+│   └── FloorType (Solid or Vented)
+├── Features
+│   ├── PanelSheet
+│   ├── Flanges
+│   ├── CableAccess
+│   └── CastorMountings
+└── Configurations
+    ├── Solid
+    └── Vented
+```
+
+### 3. Door Components
+
+#### 3.1 Door Frame Master
+```
+DoorFrame_Master.par
+├── Variables
+│   ├── Height (U_Value × 44.45mm + offset)
+│   ├── Width (600mm or 800mm + offset)
+│   ├── MaterialThickness (1.0mm or 1.2mm)
+│   └── LockType (Single, 4-point, 6-point)
+├── Features
+│   ├── FrameProfile
+│   ├── HingePoints
+│   ├── LockMounting
+│   └── HandlePosition
+└── Configurations
+    ├── Single
+    └── Wardrobe (for narrow aisles)
+```
+
+#### 3.2 AirTech Mesh Insert Master
+```
+AirTechInsert_Master.par
+├── Variables
+│   ├── Height (derived from door frame)
+│   ├── Width (derived from door frame)
+│   ├── MaterialThickness (1.0mm)
+│   └── PerforationPattern
+├── Features
+│   ├── MeshSheet
+│   ├── MountingEdges
+│   └── ReinforcementRibs
+└── Configurations
+    ├── Standard
+    └── HighVentilation
+```
+
+#### 3.3 Glass Door Insert Master
+```
+GlassInsert_Master.par
+├── Variables
+│   ├── Height (derived from door frame)
+│   ├── Width (derived from door frame)
+│   ├── GlassThickness (4mm or 6mm)
+│   └── TintType
+├── Features
+│   ├── GlassPanel
+│   └── SealingGasket
+└── Configurations
+    ├── Clear
+    └── Smoked
+```
+
+#### 3.4 Solid Door Insert Master
+```
+SolidDoorInsert_Master.par
+├── Variables
+│   ├── Height (derived from door frame)
+│   ├── Width (derived from door frame)
+│   └── MaterialThickness (1.0mm or 1.2mm)
+├── Features
+│   ├── SheetMetal
+│   └── ReinforcementRibs
+└── Configurations
+    ├── Standard (1.0mm)
+    └── HeavyDuty (1.2mm)
+```
+
+### 4. Mounting Rail Components
+
+#### 4.1 19-inch Mounting Angle Master
+```
+MountingAngle_Master.par
+├── Variables
+│   ├── Height (U_Value × 44.45mm)
+│   ├── MaterialThickness (2.0mm)
+│   └── MountingHolePitch
+├── Features
+│   ├── AngleProfile
+│   ├── UMarkings
+│   └── MountingHoles
+└── Configurations
+    ├── Front
+    └── Rear
+```
+
+### 5. Accessory Components
+
+#### 5.1 Castor Master
+```
+Castor_Master.par
+├── Variables
+│   ├── Type (Transport or Heavy Duty)
+│   └── LockingType (Fixed or Swivel)
+├── Features
+│   ├── WheelAssembly
+│   ├── MountingPlate
+│   └── BrakeAssembly (conditional)
+└── Configurations
+    ├── Transport
+    └── HeavyDuty
+```
+
+## Assembly Configuration Management
+
+### Main Assembly Master
+```
+USpace4210_Master.asm
+├── Variables
+│   ├── Height_U (24U, 30U, 36U, 42U, 48U)
+│   ├── Width_mm (600mm, 800mm)
+│   ├── Depth_mm (600mm, 800mm, 1000mm, 1200mm, 1400mm)
+│   ├── DoorType_Front (AirTech, Wardrobe, Solid, Glass)
+│   ├── DoorType_Rear (AirTech, Wardrobe, Solid, Glass)
+│   └── LoadRating (Standard, HeavyDuty)
+├── Part Selection Logic
+│   ├── IF Width = 800mm THEN Include InfillPanels
+│   ├── IF LoadRating = HeavyDuty THEN Use ThickerMaterial
+│   └── IF Height >= 42U AND Depth >= 1000mm THEN Consider Reinforcement
+└── Configuration Manager
+    ├── Display Configurations
+    │   ├── FullyAssembled
+    │   ├── ExplodedView
+    │   ├── FrameOnly
+    │   └── WithoutDoors
+    └── Alternate Assemblies
+        ├── For Load Variations
+        ├── For Door Type Variations
+        └── For Special Configurations
+```
+
+## Parametric Relationships
+
+### Key Dimensional Relationships
+- Frame Height = (U_Value × 44.45mm) + FrameOffsets
+- Panel Height = Frame Height - Clearances
+- Rail Spacing = Set back 120mm with 720mm between rails (standard)
+- Door Clearance = Appropriate gap for hinges and sealing
+
+### Material Selection Rules
+- Standard Load (500kg): Use standard material thicknesses
+- Heavy Duty Load (1500kg): Use heavy duty material thicknesses
+- Heights above 36U: Consider reinforced side panels
+- Depths above 1000mm: Consider reinforced top/bottom panels
+
+### File Naming Convention
+```
+USpace4210_[ComponentType]_[Height]_[Width]_[Depth]_[MaterialThickness]
+Examples:
+- USpace4210_SidePanel_42U_1000D_1.2mm.par
+- USpace4210_Frame_36U_800W_600D.asm
+- USpace4210_Door_48U_600W_AirTech.asm
+```
